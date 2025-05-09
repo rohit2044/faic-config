@@ -1,0 +1,7 @@
+executor:
+  - name: EXPORT_CSV
+    procedure:
+      - type: MODULE_EXECUTOR
+        source: REQUEST_PROCESSING.GET_ITEMS
+      - type: CONSTRUCT_CSV
+        source: CONSTRUCT_CSV # moduleName.[executor|mapping].name

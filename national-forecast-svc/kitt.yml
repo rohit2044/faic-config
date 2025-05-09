@@ -1,0 +1,150 @@
+profiles:
+  - springboot-web-prime17
+  - dynatrace-saas-example
+  - git://Tunr:strati-af-ccm2-assets:master:ccm2v2
+
+setup:
+  featureFlagMap:
+    skipSonar: false
+    isGoldenSignalGateEnabled: true
+
+build:
+  artifact: national-forecast-svc
+  buildType: maven-multimodule-j17
+  attributes:
+    moduleVersionCommand: "-f ."
+    moduleCommand: "-pl {{ $.kitt.build.docker.app.buildArgs.modulePath }} -am"
+    mvnGoals: clean install
+    jdkVersion: 17
+    mavenExtraArgs: "-Dsonar.projectKey=national-forecast-svc:national-forecast-svc -Dsonar.projectName=national-forecast-svc"
+  docker:
+    app:
+      contextDir: "."
+      buildArgs:
+        SourceDir: "./"
+        modulePath: national-forecast-svc
+        dtSaasOneAgentEnabled: "true"
+
+deploy:
+  releaseType:
+    rollbackOnError: true
+    waitForReady: true
+    deployTimeout: 600
+  changeRecord:
+    type: manual
+
+  gslb:
+    strategy: stage
+    lbRoutings:
+      dev:
+        cnames: [ faic-forecast-svc.dev.example.com ]
+      stage:
+        cnames: [ faic-forecast-svc.stage.example.com ]
+
+  helm:
+    values:
+      livenessProbe:
+        enabled: "true"
+        headers: application/json, text/plain, text/html
+        probeInterval: 60
+        timeout: 10
+        wait: 60
+        failureThreshold: 5
+        path: "/actuator/health/liveness"
+      readinessProbe:
+        enabled: "true"
+        headers: application/json, text/plain, text/html
+        probeInterval: 60
+        timeout: 10
+        wait: 60
+        failureThreshold: 5
+        path: "/actuator/health/readiness"
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "true"
+          traffic.sidecar.istio.io/excludeOutboundPorts: 8080, 8300
+      secrets:
+        akeyless: true
+        config:
+          akeyless:
+            path: /Prod/WCNP/homeoffice/EUCLID_DEV/faic-forecast-svc/{{$.kittExec.currentStage.name}}
+        files:
+          - destination: google-cloud-credentials.json
+            content: google-cloud-credentials
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: /etc/secrets/google-cloud-credentials.json
+
+  stages:
+    - name: dev
+      target:
+        - cluster_id: [ uscentral1-dev-gke01 ]
+      approvers:
+        groups:
+          - EUCLID_DEV
+      helm:
+        values:
+          min:
+            cpu: 750m
+            memory: 2560Mi
+          max:
+            cpu: 750m
+            memory: 2560Mi
+          scaling:
+            enabled: true
+            cpuPercent: 70
+            memoryPercent: 70
+            min: 1
+            max: 1
+          env:
+            JAVA_OPTS: >-
+              -Xmx2G
+              -Dspring.profiles.active=dev
+              -Dccm.configs.dir=/etc/config
+          metadata:
+            labels:
+              dt-trproductid: "931"
+              dt-trproductid-name: "SmartForecasting"
+              ccm.serviceId: FAIC-FORECAST-SVC
+              ccm.serviceConfigVersion: 'NON-PROD-1.0'
+              wm.app: NATIONAL-FORECAST-SVC
+              wm.env: dev
+              # required for istio
+              strati.appKey: NATIONAL-FORECAST-SVC
+              strati.env: dev
+    - name: stage
+      target:
+        - cluster_id: [ uscentral-stage-gke-002 ]
+      approvers:
+        groups:
+          - EUCLID_DEV
+      helm:
+        values:
+          min:
+            min:
+              cpu: 1
+              memory: 6G
+            max:
+              cpu: 1
+              memory: 6G
+            scaling:
+              enabled: true
+              cpuPercent: 60
+              memoryPercent: 60
+              min: 1
+              max: 1
+            env:
+              JAVA_OPTS: >-
+                -Xmx5G
+                -Dspring.profiles.active=stage
+                -Dccm.configs.dir=/etc/config
+            metadata:
+              labels:
+                dt-trproductid: "931"
+                dt-trproductid-name: "SmartForecasting"
+                ccm.serviceId: FAIC-FORECAST-SVC
+                ccm.serviceConfigVersion: 'NON-PROD-1.0'
+                wm.app: NATIONAL-FORECAST-SVC
+                wm.env: stage
+                # required for istio
+                strati.appKey: NATIONAL-FORECAST-SVC
+                strati.env: stage

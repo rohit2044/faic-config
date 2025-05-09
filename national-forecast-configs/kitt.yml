@@ -1,0 +1,26 @@
+profiles:
+  - springboot-web-jdk17-ubuntu
+
+setup:
+  featureFlagMap:
+    skipSonar: true
+
+build:
+  artifact: national-forecast-configs
+  buildType: maven-multimodule-j17
+  attributes:
+    moduleVersionCommand: "-f ."
+    moduleCommand: "-pl {{ $.kitt.build.docker.app.buildArgs.modulePath }} -am"
+    mvnGoals: clean install
+    jdkVersion: 17
+    skipDocker: true
+    mavenExtraArgs: "-Dsonar.projectKey=national-forecast-configs:national-forecast-configs -Dsonar.projectName=national-forecast-configs"
+  docker:
+    app:
+      contextDir: "."
+      buildArgs:
+        SourceDir: "./"
+        modulePath: national-forecast-configs
+
+deploy:
+  skip: true

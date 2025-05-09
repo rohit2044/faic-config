@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "app": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "call": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "initFlow": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "enum": ["MODULE_EXECUTOR"] },
+                      "source": { "type": "string" }
+                    },
+                    "required": ["type", "source"]
+                  }
+                },
+                "requestFlow": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "enum": ["MODULE_EXECUTOR"] },
+                      "resultKey": { "type": ["string", "null"] },
+                      "source": { "type": "string" }
+                    },
+                    "required": ["type", "source"]
+                  }
+                },
+                "moduleConfigs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "type": {
+                        "type": "string",
+                        "enum": ["IMDB", "PACT", "CSV_GCS", "POSTGRES", "MAPPING"]
+                      },
+                      "path": { "type": "string" }
+                    },
+                    "required": ["name", "type", "path"]
+                  }
+                }
+              },
+              "required": ["name", "initFlow", "requestFlow", "moduleConfigs"]
+            }
+          }
+        },
+        "required": ["name", "call"]
+      }
+    }
+  },
+  "required": ["app"]
+}

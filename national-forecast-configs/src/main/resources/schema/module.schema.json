@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "mapping": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["EXPORT_MAPPING", "PARAM_MAPPING"] },
+          "source": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "mapping": { "type": "string" },
+                "defaultValue": { "type": "string" },
+                "type": { "type": "string" }
+              },
+              "required": ["name", "mapping"]
+            }
+          }
+        },
+        "required": ["name", "type", "source"]
+      }
+    },
+    "executor": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "procedure": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "MODULE_MAPPING",
+                    "MODULE_EXECUTOR",
+                    "CONSTRUCT_CSV",
+                    "CREATE_QUERY",
+                    "SELECT_QUERY",
+                    "INSERT_QUERY",
+                    "UPDATE_QUERY",
+                    "DELETE_QUERY",
+                    "JSON_SCHEMA_VALIDATION",
+                    "PG_QUERY",
+                    "EXPORT_MAPPING",
+                    "PARAM_MAPPING"
+                  ]
+                },
+                "source": { "type": "string" }
+              },
+              "required": ["type", "source"]
+            }
+          }
+        },
+        "required": ["name", "procedure"]
+      }
+    }
+  }
+}

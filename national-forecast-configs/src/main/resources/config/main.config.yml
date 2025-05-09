@@ -1,0 +1,38 @@
+app:
+  - name: LINE_REVIEW
+    call:
+      - name: LINE_REVIEW_NATIONAL_FORECAST
+        initFlow:
+          - type: MODULE_EXECUTOR
+            source: REQUEST_PROCESSING.CREATE_REQUEST_TABLE
+          - type: MODULE_EXECUTOR
+            source: REQUEST_PROCESSING.CREATE_ITEM_TABLE # moduleName.executor.name
+        requestFlow:
+          - type: MODULE_EXECUTOR
+            resultKey: insertRequestItems
+            source: REQUEST_PROCESSING.INSERT_ITEMS # moduleName.executor.name
+          - type: MODULE_EXECUTOR
+            resultKey: validateRequestItems
+            source: SCHEMA_VALIDATION.VALIDATE
+          - type: MODULE_EXECUTOR
+            resultKey: exportRequestItems
+            source: EXPORT_CSV_TO_GCS.EXPORT_CSV
+          - type: MODULE_EXECUTOR
+            resultKey: persistRequest
+            source: EXPORT_PG.EXPORT_PG
+        moduleConfigs:
+          - name: REQUEST_PROCESSING
+            type: IMDB
+            path: /module-configs/line_review_forecast.imdb.yml
+          - name: SCHEMA_VALIDATION
+            type: PACT
+            path: /module-configs/line_review_forecast.pact.yml
+          - name: EXPORT_CSV_TO_GCS
+            type: CSV_GCS
+            path: /module-configs/line_review_forecast.csv_gcs.yml
+          - name: EXPORT_PG
+            type: POSTGRES
+            path: /module-configs/line_review_forecast.postgres.yml
+          - name: REQUEST_MAPPING
+            type: MAPPING
+            path: /module-configs/line_review_forecast.mapping.yml

@@ -1,0 +1,80 @@
+mapping:
+  - name: REQUEST
+    type: PARAM_MAPPING
+    source:
+      - name: forecastGrain
+        mapping: request.forecastGrain
+        type: ENUM
+        values:
+          - INA
+      - name: processingMode
+        mapping: request.processingMode
+        type: ENUM
+        values:
+          - batch
+      - name: priority
+        mapping: request.priority
+        type: ENUM
+        values:
+          - low
+          - medium
+          - high
+      - name: commonContextStartDate
+        mapping: request.commonContext.forecastPeriod.startDate
+        type: DATE
+      - name: commonContextEndDate
+        mapping: request.commonContext.forecastPeriod.endDate
+        type: DATE
+      - name: commonContextDistributedChannels
+        mapping: request.commonContext.distributedChannels
+        type: ARRAY
+        source: string # revisit
+      - name: deliverySpeed
+        mapping: request.commonContext.deliverySpeed
+        type: ENUM
+        values:
+          - ONE_DAY
+      - name: items
+        mapping: request.items
+        type: ARRAY
+        source: LINE_REVIEW_FORECAST_REQUEST.REQUEST_ITEM
+  - name: REQUEST_ITEM
+    type: PARAM_MAPPING
+    source:
+      - name: hierarchyId
+        mapping: request.items.hierarchyId
+      - name: hierarchyType
+        mapping: request.items.hierarchyType
+      - name: forecastStartDate
+        mapping: request.items.forecastPeriod.start
+        type: DATE
+      - name: forecastEndDate
+        mapping: request.items.forecastPeriod.end
+      - name: salesStartDate
+        mapping: request.items.salesPeriod.start
+      - name: salesEndDate
+        mapping: request.items.salesPeriod.end
+      - name: storeCount
+        mapping: request.items.storeCount
+      - name: stores
+        mapping: request.items.stores
+        type: ARRAY
+        source: int # revisit
+      - name: pricing
+        mapping: request.items.pricing
+      - name: deliverySpeed
+        mapping: request.items.deliverySpeed
+        type: ENUM
+        values:
+          - ONE_DAY
+      - name: similarItems
+        type: ARRAY
+        mapping: LINE_REVIEW_FORECAST_REQUEST.SIMILAR_ITEMS
+  - name: SIMILAR_ITEMS
+    type: PARAM_MAPPING
+    source:
+      - name: id
+        mapping: request.items.similarItems.id
+      - name: weightage
+        mapping: request.items.similarItems.weightage
+        type: DOUBLE

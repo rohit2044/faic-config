@@ -1,0 +1,68 @@
+mapping:
+  - name: INSERT_ITEMS
+    type: PARAM_MAPPING
+    source:
+      - name: itemId
+        mapping: request.items.itemId
+      - name: status
+        mapping: request.items.status
+        defaultValue: '0'
+        type: INT
+  - name: GET_REQUEST
+    type: EXPORT_MAPPING
+    source:
+      - name: requestId
+        mapping: request.requestId
+      - name: requestName
+        mapping: request.requestName
+  - name: GET_ITEMS
+    type: EXPORT_MAPPING
+    source:
+      - name: itemId
+        mapping: request.items.itemId
+      - name: status
+        mapping: request.items.status
+  - name: UPDATE_ITEMS
+    type: PARAM_MAPPING
+    source:
+      - name: itemId
+        mapping: process.items.itemId
+      - name: status
+        mapping: process.items.status
+executor:
+  - name: CREATE_REQUEST_TABLE
+    procedure:
+      - type: CREATE_QUERY
+        source: CREATE TABLE IF NOT EXISTS requests (request_id BIGINT, status INT)
+  - name: CREATE_ITEM_TABLE
+    procedure:
+      - type: CREATE_QUERY
+        source: CREATE TABLE IF NOT EXISTS items (item_id BIGINT, status INT)
+  - name: INSERT_ITEMS
+    procedure:
+      - type: MODULE_MAPPING
+        source: REQUEST_PROCESSING.INSERT_ITEMS # moduleName.[executor|mapping].name
+      - type: INSERT_QUERY
+        source: INSERT INTO items (item_id, status) VALUES (:itemId, :status)
+  - name: GET_REQUEST
+    procedure:
+      - type: SELECT_QUERY
+        source: SELECT request_id, request_name FROM requests WHERE request_id = :requestId
+      - type: MODULE_MAPPING
+        source: REQUEST_PROCESSING.GET_REQUEST
+  - name: GET_ITEMS
+    procedure:
+      - type: SELECT_QUERY
+        source: SELECT item_id, status FROM items WHERE item_id = :itemId
+      - type: MODULE_MAPPING
+        source: REQUEST_PROCESSING.GET_ITEMS
+  - name: UPDATE_ITEMS
+    procedure:
+      - type: MODULE_MAPPING
+        source: REQUEST_PROCESSING.UPDATE_ITEMS
+      - type: UPDATE_QUERY
+        source: UPDATE QUERY => (itemId, status)
+  - name: CLEAN_UP
+    procedure:
+      - type: DELETE_QUERY
+        source: DELETE (query...) where created_ts < now() - 1h

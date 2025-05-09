@@ -1,0 +1,8 @@
+executor:
+  - name: EXPORT_PG
+    procedure:
+      - type: MODULE_EXECUTOR
+        source: REQUEST_PROCESSING.GET_REQUEST
+      - type: INSERT_QUERY
+        source: >-
+          INSERT INTO requests (request_id, request_name) VALUES (:requestId, :requestName)
